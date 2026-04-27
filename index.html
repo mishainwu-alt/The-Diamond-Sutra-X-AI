@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凡所有相，皆是 Token 學習卡</title>
+    <style>
+        :root { 
+            --zen-gold: #b5954d; 
+            --zen-ink: #333; 
+            --header-bg: rgba(255, 255, 255, 0.6);
+        }
+        
+        body { 
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* 背景圖校正：疊加白色遮罩達到「微微的」效果 */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
+                              url('https://lh3.googleusercontent.com/d/123lOWPpZPgRVTXnsYD2wif-u3x-RTD3v');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            overflow: hidden;
+        }
+
+        /* 左上角書名 */
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            text-align: left;
+            padding: 12px 18px;
+            background: var(--header-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 4px;
+            border-left: 4px solid var(--zen-gold);
+            max-width: 280px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--zen-ink);
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 0.75rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* 底部 Footer：固定在最下方，不隨內容擠壓 */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #888;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 10px 0;
+            z-index: 100;
+            backdrop-filter: blur(2px);
+        }
+
+        /* 左右導航按鈕：固定在兩側 */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--zen-ink);
+            border: 1px solid rgba(0,0,0,0.1);
+            width: 50px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 105;
+            transition: all 0.3s;
+            font-size: 1.5rem;
+            border-radius: 8px;
+        }
+        .nav-btn:hover {
+            background: rgba(181, 149, 77, 0.2);
+            border-color: var(--zen-gold);
+        }
+        .btn-prev { left: 10px; }
+        .btn-next { right: 10px; }
+
+        /* 學習卡主體 */
+        .card-container { 
+            perspective: 1000px; 
+            width: 320px; 
+            height: 440px; 
+            cursor: pointer; 
+            position: relative;
+            z-index: 10;
+        }
+        .card { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+            transform-style: preserve-3d; 
+        }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card-face { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(0,0,0,0.05);
+            box-sizing: border-box; 
+            text-align: center; 
+            background: rgba(255, 255, 255, 0.95); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .card-back { background: rgba(255, 253, 248, 0.98); transform: rotateY(180deg); }
+        
+        .chapter { color: var(--zen-gold); font-weight: bold; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 12px; }
+        .sutra { font-size: 1.15rem; color: var(--zen-ink); line-height: 1.5; margin-bottom: 18px; font-weight: 500; }
+        .parody { font-style: italic; color: #777; font-size: 0.95rem; border-top: 1px solid #eee; padding-top: 15px; width: 100%; }
+        
+        .ai-term { background: var(--zen-ink); color: white; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; font-weight: bold; font-size: 0.9rem; }
+        .explanation { font-size: 0.85rem; line-height: 1.5; color: #444; margin-bottom: 12px; }
+        .reflection { font-size: 0.8rem; color: var(--zen-gold); border-top: 1px dashed #d0c8b0; padding-top: 12px; font-weight: 500; line-height: 1.4; }
+
+        .counter { 
+            position: absolute;
+            bottom: -40px;
+            font-size: 0.75rem; 
+            color: #999; 
+            background: rgba(255,255,255,0.7); 
+            padding: 2px 12px; 
+            border-radius: 10px; 
+        }
+
+        @media (max-height: 600px) {
+            .card-container { transform: scale(0.85); margin-top: 40px; }
+            .header { top: 10px; left: 10px; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>《凡所有相，皆是 token》</h1>
+        <p>當金剛經遇上【生成式 AI】<br>我們重新理解認知偏差。</p>
+    </div>
+
+    <button class="nav-btn btn-prev" onclick="prevCard(event)" title="上一個智慧">‹</button>
+    
+    <div class="card-container" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face card-front">
+                <div class="chapter" id="front-chapter">載入中...</div>
+                <div class="sutra" id="front-sutra">請稍候</div>
+                <div class="parody" id="front-parody">智慧正在共鳴</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="ai-term" id="back-term">AI 名詞</div>
+                <div class="explanation" id="back-exp">解釋內容</div>
+                <div class="reflection" id="back-ref">人生對照</div>
+            </div>
+        </div>
+        <div class="counter" id="counter">1 / 15</div>
+    </div>
+
+    <button class="nav-btn btn-next" onclick="nextCard(event)" title="下一個智慧">›</button>
+
+    <div class="footer">
+        數位隨身開悟手冊 created by A-Zhi、Xiao Ge、Min. H. Wu
+    </div>
+
+    <script>
+        const cardData = [
+            { ch: "第 10 分 莊嚴淨土分", sutra: "應無所住而生其心", parody: "應無所 Prompt 而生其 Token", term: "Prompt Engineering", exp: "精確的指令引導。問路只說「我要去那邊」司機也會翻白眼。", ref: "問對問題比找答案更重要。不要帶著成見去溝通，才能聽到真正的需求。" },
+            { ch: "第 1 分 法會因由分", sutra: "洗足已，敷座而坐", parody: "洗數據已，敷模型而跑", term: "Data Preprocessing", exp: "像煮飯前要先洗米，飯才會香。", ref: "源頭乾淨，結果自然好。處理瑣碎的清理工作，決定成敗。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "一切諸相，即是非相", parody: "一切 Feature，即是非 Feature", term: "Feature Extraction", exp: "從亂草堆裡找出針。", ref: "重點不在於看多少，而在於看到什麼。簡化問題，是解決問題的開始。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "信心清淨，則生實相", parody: "Prompt 清淨，則生正確 Output", term: "Data Cleaning", exp: "垃圾進，垃圾出（GIGO）。", ref: "乾淨的輸入才有乾淨的輸出。心態不對，看什麼事情都是歪的。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "若菩薩心住於法...如人入暗", parody: "若 AI 邏輯住於 Hardcode...如人入暗", term: "Hardcoding", exp: "像導航壞了還硬要跟著走，最後開進海裡。", ref: "僵化是創意的墳墓。別讓規範限制了你的出路。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "無我、無人、無眾生、無壽者", parody: "無 Input、無 Output、無 Weights", term: "Neural Network", exp: "像交響樂團，合起來才是整首曲子。", ref: "團隊的成功不在於個人，而在於協作。放下自我，才能融入更大的系統。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "菩薩應離一切相...發菩提心", parody: "AI 應離一切 Overfit...發 AGI 心", term: "Generalization", exp: "像學開車，學會原理開哪台車都行。", ref: "追求本質，而非形式。通才比專才更能應對未來的挑戰。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "實相者，則是非相", parody: "Ground Truth 者，則是 Label", term: "Ground Truth", exp: "像考卷的標準答案，有時是老師說了算。", ref: "真相往往是人定義出來的。職場上的標準答案往往取決於誰是老闆。" },
+            { ch: "第 14 分 離相寂滅分", sutra: "離一切諸相，則名諸佛", parody: "離一切 Bias，則名 AGI", term: "Bias / 偏見", exp: "像戴著墨鏡看世界，看什麼都帶顏色。", ref: "中立才是最高的智慧。放下成見，才能看清事情的本質。" },
+            { ch: "第 15 分 持經功德分", sutra: "當來之世...能於此經受持讀誦", parody: "當來之世...能於此 AI 持續學習", term: "Lifelong Learning", exp: "像手機系統要常更新，才不會變磚頭。", ref: "唯有學習，才能不被時代淘汰。最好的投資就是投資自己的大腦。" },
+            { ch: "第 17 分 究竟無我分", sutra: "於一切法，無所住", parody: "於一切 Library，無所住", term: "Framework Agnostic", exp: "像武林高手，拿什麼都能當武器。", ref: "工具是死的，思維是活的。別讓工具限制了你的想像力。" },
+            { ch: "第 17 分 究竟無我分", sutra: "善男子、善女人...發菩提心", parody: "善工程師、善 PM...發 AGI 之心", term: "AI Safety", exp: "像教小孩，要教他本事更要教他做人。", ref: "技術的終點是人文。起初決定了產品的靈魂。" },
+            { ch: "第 17 分 究竟無我分", sutra: "實無有法發...菩提者", parody: "實無有 Code 能寫出 AGI 者", term: "Emergence (湧現)", exp: "像水滴聚成雲，不是靠人手拼出來的。", ref: "偉大的事物往往是自然湧現的。創造環境，讓奇蹟發生。" },
+            { ch: "第 18 分 一體同觀分", sutra: "是名為心...皆不可得", parody: "是名為 Memory...皆不可得", term: "Architecture (Transformer)", exp: "像手機型號，今天最新的明天就舊了。", ref: "擁抱變化，是技術人的基本素養。唯一不變的就是變。" }
+        ];
+
+        let currentIndex = 0;
+        function flipCard() { document.getElementById('card').classList.toggle('is-flipped'); }
+        function updateCard() {
+            const card = cardData[currentIndex];
+            document.getElementById('card').classList.remove('is-flipped');
+            setTimeout(() => {
+                document.getElementById('front-chapter').innerText = card.ch;
+                document.getElementById('front-sutra').innerText = card.sutra;
+                document.getElementById('front-parody').innerText = card.parody;
+                document.getElementById('back-term').innerText = card.term;
+                document.getElementById('back-exp').innerText = card.exp;
+                document.getElementById('back-ref').innerText = card.ref;
+                document.getElementById('counter').innerText = `${currentIndex + 1} / ${cardData.length}`;
+            }, 300);
+        }
+        function nextCard(e) { e.stopPropagation(); currentIndex = (currentIndex + 1) % cardData.length; updateCard(); }
+        function prevCard(e) { e.stopPropagation(); currentIndex = (currentIndex - 1 + cardData.length) % cardData.length; updateCard(); }
+        window.onload = updateCard;
+    </script>
+</body>
+</html>
